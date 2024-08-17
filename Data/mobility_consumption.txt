@@ -1,0 +1,6 @@
+Land:海3 地1 空1
+Forest:海3 地2 空1
+Drive:海1 地3 空1
+Build:海2 地1 空1
+Road:海1 地1 空1
+Mountain:海4 地3 空1

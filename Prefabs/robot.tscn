@@ -1,0 +1,44 @@
+[gd_scene load_steps=8 format=3 uid="uid://bsfn7453j5nkr"]
+
+[ext_resource type="Script" path="res://Scripts/robot.gd" id="1_31bc7"]
+[ext_resource type="Texture2D" uid="uid://cyr6njkq63pts" path="res://img/Tiles/tile_0134.png" id="1_84eat"]
+[ext_resource type="Script" path="res://Scripts/Robot_state_machine.gd" id="3_md11f"]
+[ext_resource type="Script" path="res://Scripts/Idle.gd" id="4_uxyd2"]
+[ext_resource type="Script" path="res://Scripts/Move.gd" id="5_hmqlo"]
+[ext_resource type="Script" path="res://Scripts/end.gd" id="6_7j0ax"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_wmm8x"]
+size = Vector2(8, 8)
+
+[node name="Robot" type="Node2D"]
+script = ExtResource("1_31bc7")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("1_84eat")
+
+[node name="Area2D" type="Area2D" parent="."]
+collision_layer = 2
+collision_mask = 4
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
+shape = SubResource("RectangleShape2D_wmm8x")
+
+[node name="Robot_state_machine" type="Node2D" parent="."]
+script = ExtResource("3_md11f")
+initial_state = NodePath("Idle")
+
+[node name="Idle" type="Node2D" parent="Robot_state_machine"]
+script = ExtResource("4_uxyd2")
+
+[node name="Move" type="Node2D" parent="Robot_state_machine"]
+script = ExtResource("5_hmqlo")
+
+[node name="end" type="Node2D" parent="Robot_state_machine"]
+script = ExtResource("6_7j0ax")
+
+[connection signal="body_entered" from="Area2D" to="." method="_on_area_2d_body_entered"]
+[connection signal="body_exited" from="Area2D" to="." method="_on_area_2d_body_exited"]
+[connection signal="hidden_att_range" from="Robot_state_machine/Move" to="." method="_on_move_hidden_att_range"]
+[connection signal="hidden_move_range" from="Robot_state_machine/Move" to="." method="_on_move_hidden_move_range"]
+[connection signal="robot_move" from="Robot_state_machine/Move" to="." method="_on_move_robot_move"]
+[connection signal="show_move_range" from="Robot_state_machine/Move" to="." method="_on_move_show_move_range"]
