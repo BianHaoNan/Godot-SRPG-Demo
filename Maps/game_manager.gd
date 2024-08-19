@@ -201,7 +201,7 @@ func find_move_range(robot : Robot):
 	for i in range(move_distance):
 		# 遍历边缘格子，不断获取邻居格子，直到移动力消耗完，铺成移动范围
 		for now_key in now_position.keys():
-			var neighbours : Dictionary = find_neighbours_grid(now_key)
+			var neighbours : Dictionary = find_neighbours_grid(now_key, "move")
 			#print_debug("neighbours:",neighbours)
 			if neighbours != null:
 				for key in neighbours.keys():
@@ -238,7 +238,7 @@ func find_move_range(robot : Robot):
 							#print_debug("not has key:",key,",move_range_remainder_cost:",move_range_remainder_cost[key],",neighbours:",neighbours[key])
 					#move_range.append(key)
 		#if i == move_distance - 1:
-		#print_debug("i = ",i,",target:",target)
+		#print_debug("i = ",i,",move_range target:",target)
 		now_position.clear()
 		if target.is_empty():
 			break
@@ -270,14 +270,17 @@ func find_att_range(robot : Robot, move_range : Array):
 	#var move_range_cost : Dictionary = move_range_remainder_cost_N_cost["move_range_cost"]
 	# 存储攻击范围
 	var att_range : Array
+	# 存储攻击间隔范围
+	var spacing_range : Array
 	# 攻击范围等于移动距离+攻击距离
 	var att_distance : int = robot.att_distance
 	var att_spacing : int = robot.att_spacing
 	var now : Array
-	if move_range == null:
-		now.append(robot.grid_index)
-	else :
-		now = move_range
+	#if move_range == null:
+		#now.append(robot.grid_index)
+	#else :
+	move_range.append(robot.grid_index)
+	now = move_range
 	#now_position[robot.grid_index] = att_distance
 	var target : Array
 	# 移动力剩余小于前往下一个格子的移动力需求，即移动范围边缘，没想到好的计算下个格子的方法，暂时放弃
@@ -287,37 +290,56 @@ func find_att_range(robot : Robot, move_range : Array):
 	#print_debug("move_range_cost",move_range_cost)
 	#print_debug("move_range_remainder_cost:",move_range_remainder_cost)
 	#print_debug("move_range_edge:",move_range_edge)
-	
+	# 每个移动范围格子遍历攻击距离次数，取得每个格子的邻居点，如果邻居点不存在移动范围中，则加入攻击范围
 	for i in range(att_distance):
 		for now_key in now:
-			print_debug("now_key-----------:",now_key)
-			var neighbours : Dictionary = find_neighbours_grid(now_key)
+			#print_debug("now_key-----------:",now_key)
+			var neighbours : Dictionary = find_neighbours_grid(now_key, "att")
 			if neighbours != null:
 				for key in neighbours.keys():
 					if !move_range.has(key) and !att_range.has(key):
+						# 位于攻击间隔之外
+						#if i > att_spacing - 1:
 						att_range.append(key)
 						target.append(key)
-		print_debug("Current.move_range+-+-+-+-+4:",Current.move_range)
-		# 这里调用now.clear()，会把Current.move_range给清空，godot的bug？
-		# 遍历now，输出的结果只有一半，也是godot bug？
-		print_debug("now2:",now)
-		#now.clear()
-		#for j in now:
-			#print_debug("j:",j)
-			#now.erase(j)
-		print_debug("now3:",now)
-		print_debug("Current.move_range+-+-+-+-+5:",Current.move_range)
+		#
+		#print_debug("---i = ",i,",now:",now)
+		#print_debug("--i = ",i,",target:",target)
+		#print_debug("-i = ",i,",att_range:",att_range)
+		if i <= att_spacing:
+			#print_debug("i = ",i,",spacing_range:",now)
+			spacing_range.append_array(now)
+		
+		
+		#print_debug("Current.move_range+-+-+-+-+4:",Current.move_range)
+		## 这里调用now.clear()，会把Current.move_range给清空，godot的bug？
+		## 遍历now，输出的结果只有一半，也是godot bug？
+		#print_debug("now2:",now)
+		##now.clear()
+		##for j in now:
+			##print_debug("j:",j)
+			##now.erase(j)
+		#print_debug("now3:",now)
+		#print_debug("Current.move_range+-+-+-+-+5:",Current.move_range)
 		
 		if target.is_empty():
 			break
 		now = target.duplicate(true)
 		target.clear()
 	att_range.erase(robot.grid_index)
+	
+	# 移除攻击范围中的间隔区域
+	for i in spacing_range:
+		if att_range.has(i):
+			att_range.erase(i)
+	
 	print_debug("att_range:",att_range)
 	return att_range
 	
 # 计算邻居格子，并记录格子属性
-func find_neighbours_grid(now_key):
+# 如果是计算移动范围，find_type输入move，会将友军、敌军所在位置排除
+# 如果计算攻击范围，find_type输入att，会将友军、敌军位置计算在内
+func find_neighbours_grid(now_key : Vector2i, find_type : String = "move"):
 	
 	#print_debug("Current.enemy_dict：",Current.enemy_dict)
 	#print_debug("Current.friend_dict:",Current.friend_dict)
@@ -329,13 +351,15 @@ func find_neighbours_grid(now_key):
 		if vector.x >= tilemap_rect.position.x and vector.x <= (tilemap_rect.size.x + tilemap_rect.position.x -1) and vector.y >= tilemap_rect.position.y and vector.y <= (tilemap_rect.size.y + tilemap_rect.position.y - 1):
 			# 判断此范围在tilemap格子矩阵中
 			if map_dict.has(vector):
-				# 将敌军、友军所在位置排除在外
-				if Current.enemy_dict.values().has(vector):
-					#if Current.enemy_dict[vector].r_team != robot.r_team:
-					continue
-				elif Current.friend_dict.values().has(vector):
-					#if Current.friend_dict[vector].r_team != robot.r_team:
-					continue
+				if find_type == "move":
+					# 将敌军、友军所在位置排除在外
+					if Current.enemy_dict.values().has(vector):
+						#if Current.enemy_dict[vector].r_team != robot.r_team:
+						continue
+					elif Current.friend_dict.values().has(vector):
+						#if Current.friend_dict[vector].r_team != robot.r_team:
+						continue
+				
 				## 获取tilemap的自定义数据
 				var tile_data : TileData = tilemap_01.get_cell_tile_data(0, vector)
 				#if tile_data.get_custom_data("wall"):

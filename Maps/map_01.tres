@@ -97,6 +97,11 @@ texture = ExtResource("1_w4nd5")
 13:0/0 = 0
 13:0/0/terrain_set = 0
 13:0/0/terrain = 5
+13:0/0/custom_data_1 = {
+"land": 1,
+"sea": 2,
+"sky": 1
+}
 14:0/0 = 0
 14:0/0/terrain_set = 0
 14:0/0/terrain = 5
@@ -199,6 +204,11 @@ texture = ExtResource("1_w4nd5")
 11:1/0 = 0
 11:1/0/terrain_set = 0
 11:1/0/terrain = 5
+11:1/0/custom_data_1 = {
+"land": 1,
+"sea": 2,
+"sky": 1
+}
 12:1/0 = 0
 12:1/0/terrain_set = 0
 12:1/0/terrain = 5
@@ -218,6 +228,11 @@ texture = ExtResource("1_w4nd5")
 14:1/0 = 0
 14:1/0/terrain_set = 0
 14:1/0/terrain = 5
+14:1/0/custom_data_1 = {
+"land": 1,
+"sea": 2,
+"sky": 1
+}
 15:1/0 = 0
 15:1/0/terrain_set = 0
 15:1/0/terrain = 5
@@ -354,11 +369,18 @@ texture = ExtResource("1_w4nd5")
 "sea": 1,
 "sky": 1
 }
+3:3/next_alternative_id = 2
 3:3/0 = 0
 3:3/0/terrain_set = 0
 3:3/0/terrain = 3
 3:3/0/custom_data_1 = {
 "land": 3,
+"sea": 1,
+"sky": 1
+}
+3:3/1 = 1
+3:3/1/custom_data_1 = {
+"land": 1,
 "sea": 1,
 "sky": 1
 }
